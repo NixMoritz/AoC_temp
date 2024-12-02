@@ -7,6 +7,7 @@ import (
 	htmltomarkdown "github.com/JohannesKaufmann/html-to-markdown/v2"
 	"github.com/linusback/aoc-go/pkg/errorsx"
 	"io"
+	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -49,25 +50,37 @@ func Send(part Part, day, answer string) error {
 	return nil
 }
 
-func Download(year string, day string) error {
+func Download(year string, days []string) error {
+	client, err := getSessionClient()
+	if err != nil {
+		return err
+	}
+	for _, day := range days {
+		err = download(client, year, day)
+		if err != nil {
+			log.Printf("error while downloading files for year %s day %s: %v", year, day, err)
+		}
+	}
+	return nil
+}
+
+func download(client *http.Client, year, day string) error {
 	location := fmt.Sprintf("./internal/year%s/day%s/", year, day)
 	inputFound, puzzleFound, err := filesAlreadyExists(location)
 	if err != nil {
 		return err
 	}
-
-	client, err := getSessionClient()
-	if err != nil {
-		return err
+	if inputFound && puzzleFound {
+		return nil
 	}
 
 	errCh := make(chan error, 2)
 	wg := new(sync.WaitGroup)
 	if !puzzleFound {
-		downloadAsync(wg, errCh, client, year, day, location, PuzzleFile, "", parseHtmlToMarkdown)
+		downloadFileAsync(wg, errCh, client, year, day, location, PuzzleFile, "", parseHtmlToMarkdown)
 	}
 	if !inputFound {
-		downloadAsync(wg, errCh, client, year, day, location, InputFile, "/input", io.Copy)
+		downloadFileAsync(wg, errCh, client, year, day, location, InputFile, "/input", io.Copy)
 	}
 
 	wg.Wait()
@@ -113,11 +126,11 @@ func getSessionClient() (*http.Client, error) {
 	return sessionClient, sessionErr
 }
 
-func downloadAsync(wg *sync.WaitGroup, errCh chan<- error, client *http.Client, year, day, location, file, endpoint string, handleResp func(io.Writer, io.Reader) (int64, error)) {
+func downloadFileAsync(wg *sync.WaitGroup, errCh chan<- error, client *http.Client, year, day, location, file, endpoint string, handleResp func(io.Writer, io.Reader) (int64, error)) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		err := download(client, year, day, location, file, endpoint, handleResp)
+		err := downloadFile(client, year, day, location, file, endpoint, handleResp)
 		if err != nil {
 			errCh <- err
 			return
@@ -125,7 +138,7 @@ func downloadAsync(wg *sync.WaitGroup, errCh chan<- error, client *http.Client, 
 	}()
 }
 
-func download(client *http.Client, year, day, location, file, endpoint string, handleResp func(io.Writer, io.Reader) (int64, error)) error {
+func downloadFile(client *http.Client, year, day, location, file, endpoint string, handleResp func(io.Writer, io.Reader) (int64, error)) error {
 	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("https://adventofcode.com/%s/day/%s%s", year, day, endpoint), nil)
 	if err != nil {
 		return err

@@ -1,0 +1,22 @@
+{{- /*gotype: github.com/linusback/aoc-go/pkg/generate.DayData*/ -}}
+package day{{.Day}}
+
+import (
+	"log"
+	"os"
+)
+
+const (
+	exampleFile = "./internal/year{{.Year}}/day{{.Day}}/example"
+	inputFile   = "./internal/year{{.Year}}/day{{.Day}}/input"
+)
+
+func Solve() (solution1, solution2 string, err error) {
+	log.Println("welcome to day {{.Day}} of advent of code")
+	b, err := os.ReadFile(exampleFile)
+	if err != nil {
+		return
+	}
+	log.Println(string(b))
+	return
+}

@@ -22,20 +22,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = aoc.Download(year, day)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	var solution1, solution2 string
 	start := time.Now()
 	solution1, solution2, err = internal.Solve(year, day)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
 	log.Println("result 1: ", solution1)
 	log.Println("result 2: ", solution2)
-	fmt.Println("Time elapsed:", time.Since(start))
+	log.Println("Time elapsed:", time.Since(start))
 
 	err = send(aoc.Part1, day, solution1)
 	if err != nil {

@@ -1,11 +1,14 @@
+{{- /*gotype: github.com/linusback/aoc-go/pkg/generate.YearData*/ -}}
 package internal
 
 import (
-	"github.com/linusback/aoc-go/pkg/errorsx"
+    {{range .Imports}}{{.}}{{end}}
+	"{{.ModName}}/pkg/errorsx"
 )
 
 func Solve(year, day string) (solution1, solution2 string, err error) {
 	switch year {
+	{{range  .Cases}}{{.}}{{end}}
 	default:
 		err = errorsx.NewSolverError(year, day, errorsx.ErrYearNotCreated)
 		return

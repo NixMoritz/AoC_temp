@@ -9,19 +9,22 @@ BENCH=
 YEAR=
 DAY=
 
-run: build
-	./dist/$(GEN_BINARY_NAME) $(YEAR) $(DAY)
-	./dist/$(BINARY_NAME) $(YEAR) $(DAY)
+run: build-generator build-solver
 
 dev:
 	go run $(ENTRYPOINT_NAME) $(YEAR) $(DAY)
 
+run-solver: build-solver
+	./dist/$(BINARY_NAME) $(YEAR) $(DAY)
+
+run-generator: build-generator
+	./dist/$(GEN_BINARY_NAME) $(YEAR) $(DAY)
 
 all: tests build
 
-build: build-scraper build-generator
+build: build-solver build-generator
 
-build-scraper:
+build-solver:
 	go build -ldflags='-s -w' -o dist/$(BINARY_NAME) $(ENTRYPOINT)
 
 build-generator:
