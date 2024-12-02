@@ -106,12 +106,23 @@ func generateSolver(moduleName, year string) error {
 }
 
 func generateYearSolve(moduleName, year string, days []string) error {
+	var allExists bool
 	err := createDirIfNotExists(fmt.Sprintf("./internal/year%s", year))
 	if err != nil {
 		return err
 	}
 
-	f, err := os.Create(fmt.Sprintf("./internal/year%s/solve.go", year))
+	filePath := fmt.Sprintf("./internal/year%s/solve.go", year)
+
+	allExists, err = checkDays(moduleName, year, days, filePath)
+	if err != nil {
+		return err
+	}
+	if allExists {
+		return nil
+	}
+
+	f, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
@@ -148,6 +159,44 @@ func generateYearSolve(moduleName, year string, days []string) error {
 	}
 
 	return nil
+}
+
+func checkDays(moduleName, year string, days []string, path string) (allExists bool, err error) {
+	exists, err := fileExists(path)
+	if err != nil {
+		return false, err
+	}
+	if !exists {
+		return false, nil
+	}
+
+	fileBytes, err := os.ReadFile(path)
+	if err != nil {
+		return false, err
+	}
+	regexpImport, err := regexp.Compile(fmt.Sprintf(`"%s/internal/year%s/day(\d{1,2})"`, moduleName, year))
+	if err != nil {
+		return false, err
+	}
+	byteYears := regexpImport.FindAllSubmatch(fileBytes, -1)
+
+	foundDays := make([]string, 0, len(byteYears))
+	for _, yb := range byteYears {
+		if len(yb) < 2 {
+			continue
+		}
+		d := string(yb[1])
+		if !slices.Contains(foundDays, d) {
+			foundDays = append(foundDays, d)
+		}
+	}
+	for _, d := range days {
+		if !slices.Contains(foundDays, d) {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }
 
 func generatDaySolve(moduleName, year string, day string) error {
