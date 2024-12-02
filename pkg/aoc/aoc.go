@@ -6,13 +6,13 @@ import (
 	"fmt"
 	htmltomarkdown "github.com/JohannesKaufmann/html-to-markdown/v2"
 	"github.com/linusback/aoc-go-template/pkg/errorsx"
+	"github.com/linusback/aoc-go-template/pkg/util"
 	"io"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
 	"os"
-	"os/exec"
 	"regexp"
 	"strings"
 	"sync"
@@ -21,7 +21,6 @@ import (
 type Part string
 
 const (
-	aocCli          = "aoc"
 	Part1      Part = "1"
 	Part2      Part = "2"
 	InputFile       = "input"
@@ -29,25 +28,115 @@ const (
 )
 
 const (
-	ErrCmdIsNil                  errorsx.SimpleError = "cmd was nil for some reason"
 	ErrCouldNotFindSessionCookie errorsx.SimpleError = "could not find session cookie"
+	ErrWrongAnswer               errorsx.SimpleError = "that's not the right answer"
 )
 
 var (
-	sessionClient *http.Client
-	sessionErr    error
+	sessionClient       *http.Client
+	sessionErr          error
+	answerWrongMsg      = []byte(`That's not the right answer`)
+	answerToRecentlyMsg = []byte(`You gave an answer too recently`)
+	answerCorrectMsg    = []byte(`That's the right answer!`)
 )
 
-func Send(part Part, day, answer string) error {
-	cmd := exec.Command(aocCli, "submit", string(part), answer, "-d", day)
-	if cmd == nil {
-		return ErrCmdIsNil
-	}
-	err := cmd.Run()
+func Send(part Part, year, day, answer string) error {
+	answerFile := fmt.Sprintf("./internal/year%s/day%s/answer%s", year, day, part)
+	exists, err := util.FileExists(answerFile)
 	if err != nil {
 		return err
 	}
+	if exists {
+		log.Printf("already answer part %s\n", part)
+		return nil
+	}
+	client, err := getSessionClient()
+	if err != nil {
+		return err
+	}
+
+	respBody, err := sendAnswer(client, part, year, day, answer)
+	if err != nil {
+		return err
+	}
+
+	err = checkResponseAndCache(respBody, answer, answerFile)
+	if err != nil {
+		return err
+	}
+
+	if part != Part1 {
+		return nil
+	}
+
+	err = reDownloadPuzzle(client, year, day)
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func checkResponseAndCache(body []byte, answer, filePath string) error {
+	reg, err := regexp.Compile("(?i)(?s)<main>(?P<main>.*)</main>")
+	if err != nil {
+		return err
+	}
+	mainBody := reg.Find(body)
+	if bytes.Contains(mainBody, answerWrongMsg) {
+		return ErrWrongAnswer
+	}
+	if bytes.Contains(mainBody, answerToRecentlyMsg) {
+		return errors.New(string(mainBody))
+	}
+	if !bytes.Contains(mainBody, answerCorrectMsg) {
+		return errors.New(string(mainBody))
+	}
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err2 := file.Close()
+		if err2 != nil {
+			err = errors.Join(err, err2)
+		}
+	}()
+	_, err = file.WriteString(answer)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func sendAnswer(client *http.Client, part Part, year, day, answer string) (respBody []byte, err error) {
+	request, err := http.NewRequest(http.MethodPost, fmt.Sprintf("https://adventofcode.com/%s/day/%s/answer", year, day), strings.NewReader(fmt.Sprintf("level=%s&answer=%s", part, answer)))
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("content-type", "application/x-www-form-urlencoded")
+
+	resp, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		err2 := resp.Body.Close()
+		if err2 != nil {
+			err = errors.Join(err, err2)
+		}
+	}()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed request status: %d", resp.StatusCode)
+	}
+	respBody, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return
 }
 
 func Download(year string, days []string) error {
@@ -89,6 +178,15 @@ func download(client *http.Client, year, day string) error {
 		err = errors.Join(err, e)
 	}
 	return err
+}
+
+func reDownloadPuzzle(client *http.Client, year, day string) error {
+	location := fmt.Sprintf("./internal/year%s/day%s/", year, day)
+	err := downloadFile(client, year, day, location, PuzzleFile, "", parseHtmlToMarkdown)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func getSessionClient() (*http.Client, error) {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/linusback/aoc-go-template/pkg/errorsx"
+	"github.com/linusback/aoc-go-template/pkg/util"
 	"log"
 	"os"
 	"regexp"
@@ -162,7 +163,7 @@ func generateYearSolve(moduleName, year string, days []string) error {
 }
 
 func checkDays(moduleName, year string, days []string, path string) (allExists bool, err error) {
-	exists, err := fileExists(path)
+	exists, err := util.FileExists(path)
 	if err != nil {
 		return false, err
 	}
@@ -212,7 +213,7 @@ func generatDaySolve(moduleName, year string, day string) error {
 
 	solveFilePath := fmt.Sprintf("./internal/year%s/day%s/solve.go", year, day)
 
-	exists, err := fileExists(solveFilePath)
+	exists, err := util.FileExists(solveFilePath)
 	if err != nil {
 		return err
 	}
@@ -301,17 +302,6 @@ func createDirIfNotExists(path string) error {
 		return err
 	}
 	return nil
-}
-
-func fileExists(filePath string) (exists bool, err error) {
-	_, err = os.Stat(filePath)
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	if err != nil {
-		return false, err
-	}
-	return true, nil
 }
 
 func createEmptyFileIfNotExists(filePath string) error {
