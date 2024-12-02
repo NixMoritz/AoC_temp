@@ -3,7 +3,9 @@ package util
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"io"
+	"os"
 )
 
 func DoEachRowAll(input []byte, f func(row []byte, rows [][]byte, nr, total int) error) (err error) {
@@ -26,11 +28,25 @@ func DoEachRowAllBytes(rows [][]byte, f func(row []byte, rows [][]byte, nr, tota
 
 func DoEachRowBytes(input []byte, f func(row []byte, nr int) error) (err error) {
 	r := bufio.NewReader(bytes.NewReader(input))
-	return DoEachRowReader(r, f)
+	return DoEachRowBuff(r, f)
 }
 
 func DoEachRowReader(r io.Reader, f func(row []byte, nr int) error) (err error) {
-	return DoEachRowReader(bufio.NewReader(r), f)
+	return DoEachRowBuff(bufio.NewReader(r), f)
+}
+
+func DoEachRowFile(filename string, rowFunc func(row []byte, nr int) error) (err error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err2 := f.Close()
+		if err2 != nil {
+			err = errors.Join(err, err2)
+		}
+	}()
+	return DoEachRowBuff(bufio.NewReader(f), rowFunc)
 }
 
 func DoEachRowBuff(r *bufio.Reader, f func(row []byte, nr int) error) (err error) {

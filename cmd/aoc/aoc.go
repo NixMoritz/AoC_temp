@@ -30,23 +30,24 @@ func main() {
 	}
 	log.Println("result 1: ", solution1)
 	log.Println("result 2: ", solution2)
-	log.Println("Time elapsed:", time.Since(start))
-
-	err = send(aoc.Part1, day, solution1)
+	log.Printf("Time elapsed: %v\n\n", time.Since(start))
+	log.Printf("Sending Answers")
+	err = send(aoc.Part1, year, day, solution1)
 	if err != nil {
 		log.Println(err)
 	}
-	err = send(aoc.Part2, day, solution2)
+	err = send(aoc.Part2, year, day, solution2)
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-func send(part aoc.Part, day, solution string) error {
+func send(part aoc.Part, year, day, solution string) error {
 	if len(solution) == 0 {
+		log.Printf("empty answer part %s, skipping...\n", part)
 		return nil
 	}
-	err := aoc.Send(part, day, solution)
+	err := aoc.Send(part, year, day, solution)
 	if err != nil {
 		return fmt.Errorf("error while sending solution \"%s\" to probblem %s of day %s: %v", solution, part, day, err)
 	}

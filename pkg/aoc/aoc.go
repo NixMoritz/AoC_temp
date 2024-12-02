@@ -47,7 +47,7 @@ func Send(part Part, year, day, answer string) error {
 		return err
 	}
 	if exists {
-		log.Printf("already answer part %s\n", part)
+		log.Printf("already answer part %s, skipping...\n", part)
 		return nil
 	}
 	client, err := getSessionClient()
@@ -64,7 +64,7 @@ func Send(part Part, year, day, answer string) error {
 	if err != nil {
 		return err
 	}
-
+	log.Printf("part %s: That's the right answer!", part)
 	if part != Part1 {
 		return nil
 	}
