@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	htmltomarkdown "github.com/JohannesKaufmann/html-to-markdown/v2"
-	"github.com/linusback/aoc-go/pkg/errorsx"
+	"github.com/linusback/aoc-go-template/pkg/errorsx"
 	"io"
 	"log"
 	"net/http"

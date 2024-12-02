@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/linusback/aoc-go/internal"
-	"github.com/linusback/aoc-go/pkg/aoc"
-	"github.com/linusback/aoc-go/pkg/util"
+	"github.com/linusback/aoc-go-template/internal"
+	"github.com/linusback/aoc-go-template/pkg/aoc"
+	"github.com/linusback/aoc-go-template/pkg/util"
 	"log"
 	"os"
 	"time"

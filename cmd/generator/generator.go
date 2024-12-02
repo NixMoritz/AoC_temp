@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/linusback/aoc-go/pkg/aoc"
-	"github.com/linusback/aoc-go/pkg/generate"
-	"github.com/linusback/aoc-go/pkg/util"
+	"github.com/linusback/aoc-go-template/pkg/aoc"
+	"github.com/linusback/aoc-go-template/pkg/generate"
+	"github.com/linusback/aoc-go-template/pkg/util"
 	"log"
 	"os"
 	"slices"

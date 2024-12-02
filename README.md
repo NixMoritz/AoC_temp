@@ -1,4 +1,4 @@
-# aoc-go
+# aoc-go-template
 Go template project for advent of code is intended for use with gonew see https://go.dev/blog/gonew
 
 Will automatically download input and puzzle instructions. 

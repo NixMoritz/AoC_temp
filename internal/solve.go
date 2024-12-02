@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"github.com/linusback/aoc-go/pkg/errorsx"
+	"github.com/linusback/aoc-go-template/pkg/errorsx"
 )
 
 func Solve(year, day string) (solution1, solution2 string, err error) {

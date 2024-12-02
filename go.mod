@@ -1,4 +1,4 @@
-module github.com/linusback/aoc-go
+module github.com/linusback/aoc-go-template
 
 go 1.23.3
 

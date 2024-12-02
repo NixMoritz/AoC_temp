@@ -4,7 +4,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"github.com/linusback/aoc-go/pkg/errorsx"
+	"github.com/linusback/aoc-go-template/pkg/errorsx"
 	"log"
 	"os"
 	"regexp"
