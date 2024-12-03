@@ -17,6 +17,7 @@ func main() {
 		year string
 	)
 
+	log.Println("Start solver")
 	year, day, err = util.GetYearDay(os.Args)
 	if err != nil {
 		log.Fatal(err)
@@ -28,10 +29,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	log.Println("result 1: ", solution1)
 	log.Println("result 2: ", solution2)
 	log.Printf("Time elapsed: %v\n\n", time.Since(start))
 	log.Printf("Sending Answers")
+
 	err = send(aoc.Part1, year, day, solution1)
 	if err != nil {
 		log.Println(err)

@@ -65,8 +65,10 @@ func generateSolver(moduleName, year string) error {
 	years := getYears(moduleName)
 	// do not change file if year already implemented
 	if slices.Contains(years, year) {
+		log.Println("internal/solve.go: no new year skipping...")
 		return nil
 	}
+	log.Println("generating internal/solve.go")
 	years = append(years, year)
 	slices.Sort(years)
 	f, err := os.Create("./internal/solve.go")
@@ -120,9 +122,10 @@ func generateYearSolve(moduleName, year string, days []string) error {
 		return err
 	}
 	if allExists {
+		log.Printf("internal/year%s/solve.go: no new days skipping...\n", year)
 		return nil
 	}
-
+	log.Printf("generating internal/year%s/solve.go\n", year)
 	f, err := os.Create(filePath)
 	if err != nil {
 		return err
@@ -162,6 +165,55 @@ func generateYearSolve(moduleName, year string, days []string) error {
 	return nil
 }
 
+func generatDaySolve(moduleName, year string, day string) error {
+	err := createDirIfNotExists(fmt.Sprintf("./internal/year%s/day%s", year, day))
+	if err != nil {
+		return err
+	}
+
+	err = createEmptyFileIfNotExists(fmt.Sprintf("./internal/year%s/day%s/example", year, day))
+	if err != nil {
+		return err
+	}
+
+	solveFilePath := fmt.Sprintf("./internal/year%s/day%s/solve.go", year, day)
+
+	exists, err := util.FileExists(solveFilePath)
+	if err != nil {
+		return err
+	}
+	if exists {
+		log.Printf("internal/year%s/day%s/solve.go: file already exists skipping...\n", year, day)
+		return nil
+	}
+	log.Printf("generating internal/year%s/day%s/solve.go\n", year, day)
+	f, err := os.Create(solveFilePath)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err2 := f.Close()
+		if err2 != nil {
+			err = errors.Join(err, err2)
+		}
+	}()
+
+	data := DayData{
+		Day:  day,
+		Year: year,
+	}
+
+	t, err := template.ParseFS(files, "templates/solve_day.go.tmpl")
+	if err != nil {
+		return err
+	}
+	err = t.Execute(f, data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func checkDays(moduleName, year string, days []string, path string) (allExists bool, err error) {
 	exists, err := util.FileExists(path)
 	if err != nil {
@@ -198,54 +250,6 @@ func checkDays(moduleName, year string, days []string, path string) (allExists b
 	}
 
 	return true, nil
-}
-
-func generatDaySolve(moduleName, year string, day string) error {
-	err := createDirIfNotExists(fmt.Sprintf("./internal/year%s/day%s", year, day))
-	if err != nil {
-		return err
-	}
-
-	err = createEmptyFileIfNotExists(fmt.Sprintf("./internal/year%s/day%s/example", year, day))
-	if err != nil {
-		return err
-	}
-
-	solveFilePath := fmt.Sprintf("./internal/year%s/day%s/solve.go", year, day)
-
-	exists, err := util.FileExists(solveFilePath)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return nil
-	}
-
-	f, err := os.Create(solveFilePath)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err2 := f.Close()
-		if err2 != nil {
-			err = errors.Join(err, err2)
-		}
-	}()
-
-	data := DayData{
-		Day:  day,
-		Year: year,
-	}
-
-	t, err := template.ParseFS(files, "templates/solve_day.go.tmpl")
-	if err != nil {
-		return err
-	}
-	err = t.Execute(f, data)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func getYears(moduleName string) []string {

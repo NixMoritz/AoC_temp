@@ -9,7 +9,7 @@ BENCH=
 YEAR=
 DAY=
 
-run: build-generator build-solver
+run: run-generator run-solver
 
 dev:
 	go run $(ENTRYPOINT_NAME) $(YEAR) $(DAY)

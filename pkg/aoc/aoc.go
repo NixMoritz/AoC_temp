@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	htmltomarkdown "github.com/JohannesKaufmann/html-to-markdown/v2"
+	"github.com/JohannesKaufmann/html-to-markdown/v2/converter"
 	"github.com/linusback/aoc-go-template/pkg/errorsx"
 	"github.com/linusback/aoc-go-template/pkg/util"
 	"io"
@@ -160,16 +161,24 @@ func download(client *http.Client, year, day string) error {
 		return err
 	}
 	if inputFound && puzzleFound {
+		log.Printf("internal/year%s/day%s/%s: file already exists skipping...\n", year, day, PuzzleFile)
+		log.Printf("internal/year%s/day%s/%s: file already exists skipping...\n", year, day, InputFile)
 		return nil
 	}
 
 	errCh := make(chan error, 2)
 	wg := new(sync.WaitGroup)
 	if !puzzleFound {
+		log.Printf("generating internal/year%s/day%s/%s\n", year, day, PuzzleFile)
 		downloadFileAsync(wg, errCh, client, year, day, location, PuzzleFile, "", parseHtmlToMarkdown)
+	} else {
+		log.Printf("internal/year%s/day%s/%s: file already exists skipping...\n", year, day, PuzzleFile)
 	}
 	if !inputFound {
+		log.Printf("generating internal/year%s/day%s/%s\n", year, day, InputFile)
 		downloadFileAsync(wg, errCh, client, year, day, location, InputFile, "/input", io.Copy)
+	} else {
+		log.Printf("internal/year%s/day%s/%s: file already exists skipping...\n", year, day, InputFile)
 	}
 
 	wg.Wait()
@@ -275,7 +284,8 @@ func parseHtmlToMarkdown(w io.Writer, r io.Reader) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	by, err = htmltomarkdown.ConvertReader(bytes.NewReader(reg.Find(by)))
+	by, err = htmltomarkdown.ConvertReader(bytes.NewReader(reg.Find(by)),
+		converter.WithDomain("https://adventofcode.com/"))
 	if err != nil {
 		return 0, err
 	}
