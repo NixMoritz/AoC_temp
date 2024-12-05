@@ -38,8 +38,8 @@ func getYearDays() (year string, days []string, err error) {
 	start := time.Date(current.Year(), time.November, 30, 0, 0, 0, 0, loc)
 
 	daysDiff := int64(current.Sub(start) / (24 * time.Hour))
-	if daysDiff > 24 {
-		daysDiff = 24
+	if daysDiff > 25 {
+		daysDiff = 25
 	}
 	days = make([]string, 0, daysDiff)
 	for i := daysDiff; i > 0; i-- {
@@ -80,8 +80,8 @@ func getYearDay() (year, day string, err error) {
 	start := time.Date(current.Year(), time.November, 30, 0, 0, 0, 0, loc)
 
 	daysDiff := int64(current.Sub(start) / (24 * time.Hour))
-	if daysDiff > 24 {
-		daysDiff = 24
+	if daysDiff > 25 {
+		daysDiff = 25
 	}
 	return strconv.Itoa(current.Year()), strconv.FormatInt(daysDiff, 10), nil
 }
@@ -96,8 +96,8 @@ func hasPassed(year, day string) (err error) {
 	if err != nil {
 		return fmt.Errorf("while parsing day string: %v", err)
 	}
-	if i < 1 || i > 24 {
-		return errors.New("day need to have a value between 1 and 24 inclusive")
+	if i < 1 || i > 25 {
+		return errors.New("day need to have a value between 1 and 25 inclusive")
 	}
 	return nil
 }
