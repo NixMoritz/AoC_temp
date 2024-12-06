@@ -1,13 +1,31 @@
-# aoc-go-template
-Go template project for advent of code (AOC) is intended for use with gonew see https://go.dev/blog/gonew
+# Advent of Code template in Go
+Go template project for [advent of code](https://adventofcode.com/) (AOC) is intended for use with gonew see https://go.dev/blog/gonew
+This will automatically download input and puzzle instructions. As well as submit answers to the advent of code website.
 
-DISCLAIMER: this project is thrown together with late night coding and ductape, so there might be some bugs. If you find any feel free to leave a bug report or do a pull request.
+### DISCLAIMER 
+This project is thrown together with late night coding and ductape, so there might be some bugs. If you find any feel free to leave a bug report or do a pull request.  
+English is not my first language and I apologize in advance for any spelling errors or grammar mistakes. But I do enjoy learning so feel free to point them out 😀
 
-English is not my first language and I apologize in advance for any spelling errors or grammar mistakes. But I do enjoy learning so feel free to point them out 😀   
+# Install instructions:
+1. [Download and install](https://go.dev/doc/install) a version of Golang >= 1.23.3
+2. Do 1 of either:
+    * clone repo and optionally manually rename package to you liking   
+    ```git clone git@github.com:linusback/aoc-go-template.git```
+   * install gonew and initialize it that way, will automatically rename package  
+   ```git clone git@github.com:linusback/aoc-go-template.git```  
+   ```gonew github.com/linusback/aoc-go-template github.com/your_github/your_project```
+3. Generate session Cookie (by logging in) and saving it according to [instructions](https://github.com/linusback/aoc-go-template?tab=readme-ov-file#generate-and-save-session-cookie)
+4. run make inside the projects root folder, this will generate files for latest year.  
+   ```cd your/project/path && make``` 
 
-This will automatically download input and puzzle instructions. As well as submit answers to the advent of code website. 
+### Generate and save Session Cookie
+You will need a session Cookie for it to be able to download and submit answer, [detailed instructions](https://www.cookieyes.com/blog/how-to-check-cookies-on-your-website-manually/).
+1. Login on advent of code.
+2. Verify that you are logged in.
+3. Open development tools in your favourite browser (I press F12 on chrome in Ubuntu). 
+4. Navigate to Application and copy the value of the session cookie (not my actual cookie feel free to jwt decode it though 😉). 
 
-You will need a session Cookie for it to be able to download and submit answer.
+
 
 There are 3 ways to provide the value for the session cookie.
 
@@ -17,18 +35,7 @@ There are 3 ways to provide the value for the session cookie.
 
 inspired by https://github.com/scarvalhojr/aoc-cli
 
-Requires gonew, to install:
-```
-go install golang.org/x/tools/cmd/gonew@latest
-```
-
-Then create your own version of the project using go new:
-```
-gonew github.com/linusback/aoc-go-template github.com/your_github/aoc
-```
-This will copy this project and change the module path to "github.com/your_github/aoc" so specify your own.
-I guess forking the project would work to, but go.mod and package named should probably be changed manually.
-
+# Usage:
 Using generator without any arguments will try to download all available puzzle and inputs for the current year.
 Calling the solver will try to solve and submit the current days problem (or latest one).
 Just running make will call both without any arguments. 
@@ -42,7 +49,9 @@ make run-solver YEAR=2024 DAY=2
 The solver (aoc binary) only works if you first generate the needed files.
 
 Generally the filestructure inside of internal should be something like this.
-But feel free to add other packages outside of this structure
+But feel free to add other packages outside of this structure or adding more packages 
+([my own version](https://github.com/linusback/aoc) a few of those like 
+[pkg/util/input.go](https://github.com/linusback/aoc/blob/main/pkg/util/input.go "handle input files") or [pkg/util/parse.go](https://github.com/linusback/aoc/blob/main/pkg/util/parse.go "parse input rows helpers")).
 
 ```
 internal/
