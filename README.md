@@ -21,10 +21,13 @@ English is not my first language and I apologize in advance for any spelling err
 ### Generate and save Session Cookie
 You will need a session Cookie for it to be able to download and submit answer, [detailed instructions](https://www.cookieyes.com/blog/how-to-check-cookies-on-your-website-manually/).
 1. Login on advent of code.
+   ![login1](https://github.com/user-attachments/assets/11ea2b74-3ec4-4bca-8614-6aae405789a7)
+   ![login2](https://github.com/user-attachments/assets/acec0fc3-b5da-4c4e-b80e-2354edc69a43)
 2. Verify that you are logged in.
+   ![login3](https://github.com/user-attachments/assets/b8e0cfeb-0d67-4bd8-913f-0d5c68966342)
 3. Open development tools in your favourite browser (I press F12 on chrome in Ubuntu). 
 4. Navigate to Application and copy the value of the session cookie (not my actual cookie feel free to jwt decode it though 😉). 
-
+   ![login4](https://github.com/user-attachments/assets/bfd5ef6e-d790-46a1-aeb4-48645ecd7aec)
 
 
 There are 3 ways to provide the value for the session cookie.
@@ -34,6 +37,7 @@ There are 3 ways to provide the value for the session cookie.
 3. In a file called adventofcode.session (no dot) in your user's config directory /home/alice/.config on Linux (not tested for other operating systems).
 
 inspired by https://github.com/scarvalhojr/aoc-cli
+
 
 # Usage:
 Using generator without any arguments will try to download all available puzzle and inputs for the current year.
