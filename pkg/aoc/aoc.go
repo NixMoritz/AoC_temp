@@ -42,6 +42,11 @@ var (
 )
 
 func Send(part Part, year, day, answer string) error {
+	if len(answer) == 0 {
+		log.Printf("empty answer part %s, skipping...\n", part)
+		return nil
+	}
+
 	answerFile := fmt.Sprintf("./internal/year%s/day%s/answer%s", year, day, part)
 	exists, err := util.FileExists(answerFile)
 	if err != nil {
@@ -49,7 +54,7 @@ func Send(part Part, year, day, answer string) error {
 	}
 	if exists {
 		log.Printf("already answer part %s, skipping...\n", part)
-		return nil
+		return checkExistingAnswer(answerFile, answer)
 	}
 	client, err := getSessionClient()
 	if err != nil {
@@ -75,6 +80,18 @@ func Send(part Part, year, day, answer string) error {
 		return err
 	}
 
+	return nil
+}
+
+func checkExistingAnswer(filename, answer string) error {
+	existingAnswer, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	existingAnswer = bytes.TrimSpace(existingAnswer)
+	if string(existingAnswer) != answer {
+		return fmt.Errorf("existing answer: %s doesn't match new %s", existingAnswer, answer)
+	}
 	return nil
 }
 
@@ -170,7 +187,7 @@ func download(client *http.Client, year, day string) error {
 	wg := new(sync.WaitGroup)
 	if !puzzleFound {
 		log.Printf("generating internal/year%s/day%s/%s\n", year, day, PuzzleFile)
-		downloadFileAsync(wg, errCh, client, year, day, location, PuzzleFile, "", parseHtmlToMarkdown(location))
+		downloadFileAsync(wg, errCh, client, year, day, location, PuzzleFile, "", parseHtmlToMarkdown)
 	} else {
 		log.Printf("internal/year%s/day%s/%s: file already exists skipping...\n", year, day, PuzzleFile)
 	}
@@ -191,7 +208,7 @@ func download(client *http.Client, year, day string) error {
 
 func reDownloadPuzzle(client *http.Client, year, day string) error {
 	location := fmt.Sprintf("./internal/year%s/day%s/", year, day)
-	err := downloadFile(client, year, day, location, PuzzleFile, "", parseHtmlToMarkdown(location))
+	err := downloadFile(client, year, day, location, PuzzleFile, "", parseHtmlToMarkdown)
 	if err != nil {
 		return err
 	}
@@ -275,71 +292,21 @@ func downloadFile(client *http.Client, year, day, location, file, endpoint strin
 	return nil
 }
 
-func parseHtmlToMarkdown(location string) func(io.Writer, io.Reader) (int64, error) {
-	return func(w io.Writer, r io.Reader) (int64, error) {
-		reg, err := regexp.Compile("(?i)(?s)<main>(?P<main>.*)</main>")
-		if err != nil {
-			return 0, err
-		}
-		by, err := io.ReadAll(r)
-		if err != nil {
-			return 0, err
-		}
-
-		main := reg.Find(by)
-		answerRegex, err := regexp.Compile(`(?i)<p>Your puzzle answer was <code>(.*)</code>.</p>`)
-		if err != nil {
-			return 0, err
-		}
-		answers := answerRegex.FindAllSubmatch(main, -1)
-		if len(answers) > 0 {
-			generateAnswerFiles(location, answers)
-		}
-
-		by, err = htmltomarkdown.ConvertReader(bytes.NewReader(main),
-			converter.WithDomain("https://adventofcode.com/"))
-		if err != nil {
-			return 0, err
-		}
-		return io.Copy(w, bytes.NewReader(by))
-	}
-}
-
-func generateAnswerFiles(location string, answers [][][]byte) {
-	for i, answerMatch := range answers {
-		if len(answerMatch) > 1 {
-			err := generateCachedAnswerFile(location, i+1, answerMatch[1])
-			if err != nil {
-				log.Printf("err while saving cached answer: %v\n", err)
-			}
-		}
-	}
-}
-
-func generateCachedAnswerFile(location string, part int, answer []byte) (err error) {
-	filePath := fmt.Sprintf("%sanswer%d", location, part)
-	exists, err := util.FileExists(filePath)
-	if exists {
-		return nil
-	}
+func parseHtmlToMarkdown(w io.Writer, r io.Reader) (int64, error) {
+	reg, err := regexp.Compile("(?i)(?s)<main>(?P<main>.*)</main>")
 	if err != nil {
-		return err
+		return 0, err
 	}
-	file, err := os.Create(filePath)
+	by, err := io.ReadAll(r)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	defer func() {
-		err2 := file.Close()
-		if err2 != nil {
-			err = errors.Join(err, err2)
-		}
-	}()
-	_, err = file.Write(answer)
+	by, err = htmltomarkdown.ConvertReader(bytes.NewReader(reg.Find(by)),
+		converter.WithDomain("https://adventofcode.com/"))
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return io.Copy(w, bytes.NewReader(by))
 }
 
 func getSessionCookie() (string, error) {

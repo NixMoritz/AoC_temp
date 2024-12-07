@@ -45,14 +45,11 @@ func main() {
 	}
 }
 
-func send(part aoc.Part, year, day, solution string) error {
-	if len(solution) == 0 {
-		log.Printf("empty answer part %s, skipping...\n", part)
-		return nil
-	}
-	err := aoc.Send(part, year, day, solution)
+// send wraps the return error from aoc.Send for more debuging information
+func send(part aoc.Part, year, day, answer string) error {
+	err := aoc.Send(part, year, day, answer)
 	if err != nil {
-		return fmt.Errorf("error while sending solution \"%s\" to probblem %s of day %s: %v", solution, part, day, err)
+		return fmt.Errorf("err for part %s of day %s: %v", part, day, err)
 	}
 	return nil
 }
