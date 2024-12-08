@@ -12,11 +12,15 @@ const (
 )
 
 func Solve() (solution1, solution2 string, err error) {
+	return solve(exampleFile)
+}
+
+func solve(filename string) (solution1, solution2 string, err error) {
 	log.Println("welcome to day {{.Day}} of advent of code")
-	b, err := os.ReadFile(exampleFile)
+	b, err := os.ReadFile(filename)
 	if err != nil {
-		return
+		return "", "", err
 	}
 	log.Println(string(b))
-	return
+	return solution1, solution2, err
 }
