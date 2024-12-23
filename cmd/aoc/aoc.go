@@ -12,36 +12,39 @@ import (
 
 func main() {
 	var (
+		days []string
 		day  string
 		err  error
 		year string
 	)
-
-	log.Println("Start solver")
-	year, day, err = util.GetYearDay(os.Args)
+	year, days, err = util.GetYearDay(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	var solution1, solution2 string
-	start := time.Now()
-	solution1, solution2, err = internal.Solve(year, day)
-	if err != nil {
-		log.Fatal(err)
-	}
+	for _, day = range days {
+		start := time.Now()
+		solution1, solution2, err = internal.Solve(year, day)
+		if err != nil {
+			log.Printf("%v\n\n", err)
+			continue
+		}
 
-	log.Println("result 1: ", solution1)
-	log.Println("result 2: ", solution2)
-	log.Printf("Time elapsed: %v\n\n", time.Since(start))
-	log.Printf("Sending Answers")
+		log.Println("result 1: ", solution1)
+		log.Println("result 2: ", solution2)
+		log.Printf("Time elapsed: %v\n", time.Since(start))
+		log.Printf("Sending Answers")
 
-	err = send(aoc.Part1, year, day, solution1)
-	if err != nil {
-		log.Println(err)
-	}
-	err = send(aoc.Part2, year, day, solution2)
-	if err != nil {
-		log.Println(err)
+		err = send(aoc.Part1, year, day, solution1)
+		if err != nil {
+			log.Println(err)
+		}
+		err = send(aoc.Part2, year, day, solution2)
+		if err != nil {
+			log.Println(err)
+		}
+		log.Printf("\n\n")
 	}
 }
 

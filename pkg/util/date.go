@@ -16,7 +16,7 @@ func GetYearDays(args []string) (year string, days []string, err error) {
 			return "", nil, err
 		}
 	} else {
-		year, days, err = getYearDays()
+		year, days, err = getYearDays(time.Now())
 		if err != nil {
 			return "", nil, err
 		}
@@ -24,7 +24,7 @@ func GetYearDays(args []string) (year string, days []string, err error) {
 	return year, days, nil
 }
 
-func getYearDays() (year string, days []string, err error) {
+func getYearDays(current time.Time) (year string, days []string, err error) {
 	var loc *time.Location
 
 	loc, err = time.LoadLocation("EST")
@@ -33,10 +33,12 @@ func getYearDays() (year string, days []string, err error) {
 
 	}
 
-	current := time.Now()
-
+	current = time.Date(current.Year(), current.Month(), current.Day(), current.Hour(), current.Minute(), current.Second(), current.Nanosecond(), loc)
 	start := time.Date(current.Year(), time.November, 30, 0, 0, 0, 0, loc)
-
+	y := current.Year()
+	if current.Sub(start) < 0 {
+		y -= 1
+	}
 	daysDiff := int64(current.Sub(start) / (24 * time.Hour))
 	if daysDiff > 25 {
 		daysDiff = 25
@@ -46,27 +48,35 @@ func getYearDays() (year string, days []string, err error) {
 		days = append(days, strconv.FormatInt(i, 10))
 	}
 
-	return strconv.Itoa(current.Year()), days, nil
+	return strconv.Itoa(y), days, nil
 }
 
-func GetYearDay(args []string) (year, day string, err error) {
+func GetYearDay(args []string) (year string, days []string, err error) {
+	var day string
 	if len(args) > 2 {
 		year = args[1]
 		day = args[2]
 		err = hasPassed(year, day)
 		if err != nil {
-			return "", "", err
+			return "", nil, err
+		}
+		days = []string{day}
+	} else if len(args) == 2 && args[1] == "all" {
+		year, days, err = getYearDays(time.Now())
+		if err != nil {
+			return "", nil, err
 		}
 	} else {
-		year, day, err = getYearDay()
+		year, day, err = getYearDay(time.Now())
 		if err != nil {
-			return "", "", err
+			return "", nil, err
 		}
+		days = []string{day}
 	}
-	return year, day, nil
+	return year, days, nil
 }
 
-func getYearDay() (year, day string, err error) {
+func getYearDay(current time.Time) (year, day string, err error) {
 	var loc *time.Location
 
 	loc, err = time.LoadLocation("EST")
@@ -75,15 +85,17 @@ func getYearDay() (year, day string, err error) {
 
 	}
 
-	current := time.Now()
-
+	current = time.Date(current.Year(), current.Month(), current.Day(), current.Hour(), current.Minute(), current.Second(), current.Nanosecond(), loc)
 	start := time.Date(current.Year(), time.November, 30, 0, 0, 0, 0, loc)
-
+	y := current.Year()
+	if current.Sub(start) < 0 {
+		y -= 1
+	}
 	daysDiff := int64(current.Sub(start) / (24 * time.Hour))
 	if daysDiff > 25 {
 		daysDiff = 25
 	}
-	return strconv.Itoa(current.Year()), strconv.FormatInt(daysDiff, 10), nil
+	return strconv.Itoa(y), strconv.FormatInt(daysDiff, 10), nil
 }
 
 func hasPassed(year, day string) (err error) {

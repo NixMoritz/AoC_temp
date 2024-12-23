@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/linusback/aoc-go-template/pkg/errorsx"
+	"github.com/linusback/aoc-go-template/pkg/filenames"
 	"github.com/linusback/aoc-go-template/pkg/util"
 	"log"
 	"os"
@@ -29,8 +30,10 @@ type YearData struct {
 }
 
 type DayData struct {
-	Day  string
-	Year string
+	Day         string
+	Year        string
+	ExampleFile string
+	InputFile   string
 }
 
 func Generate(year string, days []string) error {
@@ -171,7 +174,7 @@ func generatDaySolve(moduleName, year string, day string) error {
 		return err
 	}
 
-	err = createEmptyFileIfNotExists(fmt.Sprintf("./internal/year%s/day%s/example", year, day))
+	err = createEmptyFileIfNotExists(fmt.Sprintf("./internal/year%s/day%s/%s", year, day, filenames.ExampleFile))
 	if err != nil {
 		return err
 	}
@@ -199,8 +202,10 @@ func generatDaySolve(moduleName, year string, day string) error {
 	}()
 
 	data := DayData{
-		Day:  day,
-		Year: year,
+		Day:         day,
+		Year:        year,
+		ExampleFile: filenames.ExampleFile,
+		InputFile:   filenames.InputFile,
 	}
 
 	t, err := template.ParseFS(files, "templates/solve_day.go.tmpl")
